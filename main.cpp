@@ -2,13 +2,9 @@
 #include<fstream>
 #include<sstream>
 #include<vector>
+#include "NearestNeighbor.h"
 
 using namespace std;
-
-struct DataPoint {
-	float classType;
-	vector<float> features;
-};
 
 int main(int argc, char* argv[]) {
 	if (argc < 2) {
@@ -41,14 +37,12 @@ int main(int argc, char* argv[]) {
 	
 	cout << "There are " << Data.size() << " data points with " << Data.at(0).features.size() << " choices of features." << endl;
 	
-	cout << "First few lines..." << endl;
-	
-	for (int i = 0; i < 10; ++i) {
-		cout << Data.at(i).classType << " ";
-		for (int j = 0; j < Data.at(i).features.size(); ++j) {
-			cout << Data.at(i).features.at(j) << " ";
-		}
-		cout << endl;
+	vector<int> choices;
+	for (int i = 0; i < Data.at(0).features.size(); ++i) {
+		choices.push_back(i);
 	}
 
+	float accuracy = EvalAccuracy(Data, choices);
+	
+	cout << "Accuracy with all features is " << accuracy << endl;
 }
