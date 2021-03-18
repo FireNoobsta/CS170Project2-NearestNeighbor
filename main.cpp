@@ -37,6 +37,11 @@ int main(int argc, char* argv[]) {
 	}
 	
 	cout << "There are " << Data.size() << " data points with " << Data.at(0).features.size() << " choices of features." << endl;
+	cout << "Type the number of the algorithm you want." << endl;
+	cout << "1. Forward Selection " << endl;
+	cout << "2. Backward Elimination" << endl;
+	int input = 1;
+	cin >> input;
 	
 	vector<int> choices;
 	for (int i = 0; i < Data.at(0).features.size(); ++i) {
@@ -47,45 +52,83 @@ int main(int argc, char* argv[]) {
 	
 	cout << "Accuracy with all " << choices.size() << " features is " << accuracy << endl;
 	
-	cout << "Using forward selection search ..." << endl;
+	cout << "Default accuracy is " << DefaultAccuracy(Data) << endl;
 	
 	vector<int> testChoice, bestChoice;
 	unordered_set<int> currSet, bestSet;
-	int bestfeatToAdd;
+	int bestFeat;
 	float bestAccuracy, bestAccThisPhase, currAcc;
 	bestAccuracy = 0;
-	for (int i = 0; i < choices.size(); ++i) {
-		bestAccThisPhase = 0;
-		bestfeatToAdd = 0;
-		for (int j = 0; j < choices.size(); ++j) {
-			if (currSet.count(j)) {
-				continue;
+	if (input == 1) {
+		cout << "Using forward selection search ..." << endl;
+		for (int i = 0; i < choices.size(); ++i) {
+			bestAccThisPhase = 0;
+			bestFeat = 0;
+			for (int j = 0; j < choices.size(); ++j) {
+				if (currSet.count(j)) {
+					continue;
+				}
+				GenAddedChoiceVector(currSet, j, choices.size(), testChoice);
+				currAcc = EvalAccuracy(Data, testChoice);
+				cout << "Using features {";
+				printChoice(testChoice);
+				cout << "} accuracy is " << currAcc << "." << endl;
+				if (currAcc > bestAccThisPhase) {
+					bestAccThisPhase = currAcc;
+					bestFeat = j;
+				}
 			}
-			GenAddedChoiceVector(currSet, j, choices.size(), testChoice);
-			currAcc = EvalAccuracy(Data, testChoice);
-			cout << "Using features {";
+			currSet.insert(bestFeat);
+			if (bestAccThisPhase > bestAccuracy) {
+				bestAccuracy = bestAccThisPhase;
+				bestSet = currSet;
+			}
+			cout << endl;
+			cout << "Feature set {";
+			GenChoiceVector(currSet, choices.size(), testChoice);
 			printChoice(testChoice);
-			cout << "} accuracy is " << currAcc << "." << endl;
-			if (currAcc > bestAccThisPhase) {
-				bestAccThisPhase = currAcc;
-				bestfeatToAdd = j;
-			}
+			cout << "} is best, accuracy is " << bestAccThisPhase << "." << endl;
+			cout << endl;
 		}
-		currSet.insert(bestfeatToAdd);
-		if (bestAccThisPhase > bestAccuracy) {
-			bestAccuracy = bestAccThisPhase;
-			bestSet = currSet;
-		}
-		cout << endl;
-		cout << "Feature set {";
-		GenChoiceVector(currSet, choices.size(), testChoice);
-		printChoice(testChoice);
-		cout << "} is best, accuracy is " << bestAccThisPhase << "." << endl;
-		cout << endl;
 	}
-	
+	else {
+		cout << "Using Backward selection search ..." << endl;
+		for (int i = 0; i < choices.size(); ++i) {
+			currSet.insert(choices.at(i));
+		}
+		
+		for (int i = 0; i < choices.size(); ++i) {
+			bestAccThisPhase = 0;
+			bestFeat = 0;
+			for (int j = 0; j < choices.size(); ++j) {
+				if (!currSet.count(j)) {
+					continue;
+				}
+				GenRemovedChoiceVector(currSet, j, choices.size(), testChoice);
+				currAcc = EvalAccuracy(Data, testChoice);
+				cout << "Using features {";
+					printChoice(testChoice);
+				cout << "} accuracy is " << currAcc << "." << endl;
+				if (currAcc > bestAccThisPhase) {
+					bestAccThisPhase = currAcc;
+					bestFeat = j;
+				}
+			}
+			currSet.erase(bestFeat);
+			if (bestAccThisPhase > bestAccuracy) {
+				bestAccuracy = bestAccThisPhase;
+				bestSet = currSet;
+			}
+			cout << endl;
+			cout << "Feature set {";
+				GenChoiceVector(currSet, choices.size(), testChoice);
+				printChoice(testChoice);
+			cout << "} is best, accuracy is " << bestAccThisPhase << "." << endl;
+			cout << endl;
+		}
+	}
 	GenChoiceVector(bestSet, choices.size(), bestChoice);
-	cout << "Serach finished. Best choice of features is set {";
+	cout << "Search finished. Best choice of features is set {";
 	printChoice(bestChoice);
 	cout << "} with accuracy " << bestAccuracy << "." << endl;
 }

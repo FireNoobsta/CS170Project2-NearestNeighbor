@@ -38,11 +38,35 @@ float NearestNeighbor(vector<DataPoint>& Data, DataPoint& toClassify, vector<int
 	return Data.at(nearestPoint).classType;
 }
 
+float DefaultAccuracy(vector<DataPoint>& Data) {
+	float defaultAcc;
+	int numInClassOne = 0;
+	for (int i = 0; i < Data.size(); ++i) {
+		if (CloseEnough(Data.at(i).classType, 1)) {
+			++numInClassOne;
+		}
+	}
+	int numMajority;
+	if (numInClassOne > (Data.size() / 2)) {
+		numMajority = numInClassOne;
+	}
+	else {
+		numMajority = Data.size() - numInClassOne;
+	}
+	defaultAcc = static_cast<float>(numMajority) / static_cast<float>(Data.size());
+	return defaultAcc;
+}
+
 float EvalAccuracy(vector<DataPoint>& Data, vector<int>& featureChoice) {
 	int numCorrect = 0;
 	float calculatedType;
 	DataPoint pointLeftOut;
 	vector<DataPoint>::iterator iter;
+	
+	if (featureChoice.size() == 0) {
+		return DefaultAccuracy(Data);
+	}
+	
 	for (iter = Data.begin(); iter < Data.end(); ++iter) {
 		pointLeftOut = *iter;
 		iter = Data.erase(iter);
@@ -52,7 +76,6 @@ float EvalAccuracy(vector<DataPoint>& Data, vector<int>& featureChoice) {
 		}
 		iter = Data.insert(iter, pointLeftOut);
 	}
-	//cout << "Calculation is " << numCorrect << " / " << Data.size() << endl;
 	float accuracy = static_cast<float>(numCorrect) / static_cast<float>(Data.size());
 	return accuracy;
 }
@@ -70,6 +93,12 @@ void GenAddedChoiceVector(unordered_set<int>& set, int addedFeature, int numFeat
 	set.insert(addedFeature);
 	GenChoiceVector(set, numFeatures, choiceVec);
 	set.erase(addedFeature);
+}
+
+void GenRemovedChoiceVector(unordered_set<int>& set, int removedFeature, int numFeatures, vector<int>& choiceVec) {
+	set.erase(removedFeature);
+	GenChoiceVector(set, numFeatures, choiceVec);
+	set.insert(removedFeature);
 }
 
 void printChoice(vector<int>& choice) {
