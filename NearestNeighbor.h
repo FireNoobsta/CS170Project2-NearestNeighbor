@@ -2,6 +2,7 @@
 #include<limits>
 #include<cmath>
 #include<unordered_set>
+#include<iostream>
 
 using namespace std;
 
@@ -54,4 +55,28 @@ float EvalAccuracy(vector<DataPoint>& Data, vector<int>& featureChoice) {
 	//cout << "Calculation is " << numCorrect << " / " << Data.size() << endl;
 	float accuracy = static_cast<float>(numCorrect) / static_cast<float>(Data.size());
 	return accuracy;
+}
+
+void GenChoiceVector(unordered_set<int>& set, int numFeatures, vector<int>& choiceVec) {
+	choiceVec.clear();
+	for (int i = 0; i < numFeatures; ++i) {
+		if (set.count(i)) {
+			choiceVec.push_back(i);
+		}
+	}
+}
+
+void GenAddedChoiceVector(unordered_set<int>& set, int addedFeature, int numFeatures, vector<int>& choiceVec) {
+	set.insert(addedFeature);
+	GenChoiceVector(set, numFeatures, choiceVec);
+	set.erase(addedFeature);
+}
+
+void printChoice(vector<int>& choice) {
+	for (int i = 0; i < choice.size(); ++i) {
+		cout << choice.at(i) + 1;
+		if (i + 1 < choice.size()) {
+			cout << ", ";
+		}
+	}
 }
